@@ -39,3 +39,20 @@ class YoloDataset(Dataset):
     
     def __len__(self):
         return len(self.image_files)
+
+# custom collate_fn 생성하여 batch 레벨로 출력값들이 동일한 shape가 되도록 변경. 
+def custom_collate_fn(batch):
+    images, targets = list(zip(*batch))
+    # print(len(images), len(targets))
+    # print(images[0].shape, images[1].shape, targets[0].shape, targets[1].shape)
+    targets = [boxes for boxes in targets if boxes is not None]
+    # Add sample index to targets
+    for i, boxes in enumerate(targets):
+        boxes[:, 0] = i
+
+    try:
+        targets = torch.cat(targets, 0)
+    except RuntimeError:
+        targets = None  # No boxes for an image
+    # print('targets after cat:', targets.shape)
+    return images, targets
