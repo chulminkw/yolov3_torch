@@ -136,7 +136,7 @@ class YoloLayer(nn.Module):
         pred_obj = torch.sigmoid(preds[..., 4:5])
         pred_class = torch.sigmoid(preds[..., 5:])
 
-        scaled_anchors = self.get_scaled_anchors(self.anchors, self.img_size, grid_size)
+        scaled_anchors = self.get_scaled_anchors(self.anchors, self.img_size, grid_size, device)
 
         adj_pred_cxy, adj_pred_wh = self.adjust_to_grid(pred_cxy, pred_wh, 
                                                    scaled_anchors, grid_size, device)
