@@ -39,7 +39,7 @@ class YoloDataset(Dataset):
     
     def __len__(self):
         return len(self.image_files)
-
+    
 # custom collate_fn 생성하여 batch 레벨로 출력값들이 동일한 shape가 되도록 변경. 
 def custom_collate_fn(batch):
     images, targets = list(zip(*batch))

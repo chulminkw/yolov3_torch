@@ -91,7 +91,7 @@ def make_yolo_anno_file(df, tgt_labels_dir):
   
   return tgt_label_path_list
 
-def get_scaled_anchors(img_size, grid_size):
+def get_scaled_anchors(img_size, grid_size, device):
     all_anchors = {'scale1': [(10, 13), (16, 30), (33, 23)],
                    'scale2': [(30, 61), (62, 45), (59, 119)],
                    'scale3': [(116, 90), (156, 198), (373, 326)]}
@@ -100,7 +100,13 @@ def get_scaled_anchors(img_size, grid_size):
     elif grid_size == 26:
         anchors = all_anchors['scale2']
     elif grid_size == 52:
-        anchors = all_anchors['scale3']
+        anchors = all_anchors['scale1']
+
+    stride = img_size / grid_size
+    # print('grid_size:', grid_size, 'stride:', stride, anchors)
+    scaled_anchors = torch.tensor([(w/stride, h/stride) for w, h in anchors])
+    scaled_anchors = scaled_anchors.to(device)
+    return scaled_anchors
         
 
     stride = img_size / grid_size
@@ -116,7 +122,7 @@ def box_iou_wh(wh_1, wh_2):
     
     return ious
 
-def mapping_targets_on_grid(pred_raw, targets, scaled_anchors, grid_size, device='cpu', is_visual=False):
+def mapping_targets_on_grid(pred_raw, targets, scaled_anchors, grid_size, device, is_visual=False):
     '''
     targets는 배치 포함 2차원
     pred_raw는 배치 포함 5차원

@@ -120,9 +120,11 @@ class YoloLayer(nn.Module):
         self.num_anchors = len(anchors)
         self.num_classes = num_classes
         self.img_size = img_size
-        self.device='cpu' # test용도
+        # self.device='cpu' # test용도
 
     def forward(self, x):
+        # get_scaled_anchor()와 adjust_to_grid()에 device 인자 필요. 
+        device = x.device
         # x의 shape는 (batch_size, num_anchors * (num_classes + 5), grid_size, grid_size)
         # 중심좌표, 너비, 높이, object, class값 연산을 편리하기 위해서 (batch_size, num_anchors, grid_size, grid_size, num_classes+5) 로 변환
         batch_size = x.shape[0]
@@ -137,7 +139,7 @@ class YoloLayer(nn.Module):
         scaled_anchors = self.get_scaled_anchors(self.anchors, self.img_size, grid_size)
 
         adj_pred_cxy, adj_pred_wh = self.adjust_to_grid(pred_cxy, pred_wh, 
-                                                   scaled_anchors, grid_size, self.device)
+                                                   scaled_anchors, grid_size, device)
         adj_preds = torch.cat([adj_pred_cxy, adj_pred_wh, pred_obj, pred_class], dim=-1)
         
         if not self.training: # 학습이 아니고 예측(inference) 시 별도 로직 필요. 
@@ -145,9 +147,9 @@ class YoloLayer(nn.Module):
 
         return adj_preds
         
-    def get_scaled_anchors(self, org_anchors, img_size, grid_size):
+    def get_scaled_anchors(self, org_anchors, img_size, grid_size, device):
         stride = img_size / grid_size
-        scaled_anchors = torch.tensor([(w/stride, h/stride) for w, h in org_anchors], device=self.device)
+        scaled_anchors = torch.tensor([(w/stride, h/stride) for w, h in org_anchors], device=device)
         return scaled_anchors
         
     def adjust_to_grid(self, pred_cxy, pred_wh, scaled_anchors, grid_size, device):
