@@ -54,5 +54,5 @@ def custom_collate_fn(batch):
         targets = torch.cat(targets, 0)
     except RuntimeError:
         targets = None  # No boxes for an image
-    # print('targets after cat:', targets.shape)
+    images = torch.stack([image for image in images])
     return images, targets
